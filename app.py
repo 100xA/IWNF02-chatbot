@@ -9,7 +9,8 @@ def home():
 @app.route('/message', methods=['POST'])
 def message():
     user_message = request.form.get('message')
-    return render_template('message.html', message=user_message)
+    ai_response = "This is a placeholder AI response. We'll implement real AI responses in the next step."
+    return render_template('message.html', message=user_message, ai_response=ai_response)
 
 if __name__ == '__main__':
     app.run(debug=True)
