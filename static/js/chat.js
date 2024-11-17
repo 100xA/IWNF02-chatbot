@@ -2,6 +2,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageForm = document.getElementById('messageForm');
     const messageInput = document.getElementById('messageInput');
     const submitButton = messageForm.querySelector('button[type="submit"]');
+    const chatBox = document.getElementById('chatBox');
+
+    // Function to scroll to bottom of chat
+    function scrollToBottom() {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
 
     // Function to toggle button state
     function toggleSubmitButton() {
@@ -10,7 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.classList.toggle('cursor-not-allowed', !messageInput.value.trim());
     }
 
-    // Initial button state
+    // Initial scroll and button state
+    scrollToBottom();
     toggleSubmitButton();
 
     // Listen for input changes
@@ -24,6 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Handle new content added to chat
+    document.body.addEventListener('htmx:afterSwap', function(e) {
+        if (e.detail.target.id === 'chatBox') {
+            scrollToBottom();
+        }
+    });
+
     // Clear input after successful submission
     messageForm.addEventListener('htmx:afterRequest', function(e) {
         if (e.detail.successful) {
@@ -31,4 +45,4 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleSubmitButton();
         }
     });
-});
+}); 
