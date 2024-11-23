@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify
+import markdown2
 import logging
 import google.generativeai as genai
 from http import HTTPStatus
@@ -68,14 +69,47 @@ def get_non_support_response(message):
     """Get a non-support response"""
     return "I'm here to help with technical, account, billing, and product support. How can I assist you today?"
 
+def format_ai_response(response_text):
+    """Convert markdown to HTML with specific features enabled"""
+    extras = [
+        "fenced-code-blocks",   # ```code blocks```
+        "tables",               # Tables support
+        "break-on-newline",     # Line breaks
+        "header-ids",           # Add IDs to headers
+        "strike",               # Strike-through text
+        "task_list"            # Checkboxes
+    ]
+    
+    # Convert markdown to HTML
+    html = markdown2.markdown(response_text, extras=extras)
+    return html
+
 def get_gemini_response(user_message, max_retries=3):
-    """Get response from Gemini with retry logic"""
+    """Get response from Gemini with markdown formatting"""
+    is_support, category = is_support_message(user_message)
+    
+    if not is_support:
+        return format_ai_response(get_non_support_response(user_message))
+    
+    prompt = f"""Respond to this {category}-related support query using markdown formatting for clarity:
+    
+    {user_message}
+    
+    Format your response with:
+    - Clear headers for sections
+    - Bullet points or numbered lists where appropriate
+    - Bold for important terms
+    - Code blocks for technical commands or examples
+    - Tables if comparing options
+    
+    Make the response clear and well-structured."""
+    
     retry_count = 0
     while retry_count < max_retries:
         try:
             model = genai.GenerativeModel('gemini-pro')
-            response = model.generate_content(user_message)
-            return response.text
+            response = model.generate_content(prompt)
+            return format_ai_response(response.text)
             
         except Exception as e:
             retry_count += 1
