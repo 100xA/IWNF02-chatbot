@@ -7,6 +7,26 @@ import time
 
 app = Flask(__name__, static_url_path='/static')
 
+SUPPORT_KEYWORDS ={
+  'technical': [
+        'error', 'bug', 'issue', 'problem', 'broken', "doesn't work", 
+        'help', 'how to', 'how do I', 'stuck', 'trouble'
+    ],
+    'account': [
+        'login', 'password', 'account', 'sign in', 'signup', 'register',
+        'authentication', 'forgot', 'reset'
+    ],
+    'billing': [
+        'payment', 'charge', 'bill', 'invoice', 'subscription', 'price',
+        'refund', 'cost', 'plan'
+    ],
+    'product': [
+        'feature', 'function', 'use', 'using', 'install', 'setup',
+        'configure', 'settings', 'upgrade'
+    ]
+}
+
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -33,6 +53,20 @@ class ChatError:
         "suggestion": "Please try again. If the problem continues, you may want to refresh the page."
     }
 
+
+def is_support_message(message):
+    """Check if the message is a support message"""
+    message = message.lower()
+
+    # Check each category for keywords
+    for category, keywords in SUPPORT_KEYWORDS.items():
+        if any(keyword in message for keyword in keywords):
+            return True, category
+    return False, None
+
+def get_non_support_response(message):
+    """Get a non-support response"""
+    return "I'm here to help with technical, account, billing, and product support. How can I assist you today?"
 
 def get_gemini_response(user_message, max_retries=3):
     """Get response from Gemini with retry logic"""
