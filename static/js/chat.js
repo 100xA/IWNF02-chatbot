@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     messageInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter' && !e.shiftKey && messageInput.value.trim()) {
             e.preventDefault();
-            messageForm.submit();
+            htmx.trigger(messageForm, 'submit');
         }
     });
 

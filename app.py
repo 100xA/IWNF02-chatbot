@@ -33,7 +33,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configure Gemini API
-GEMINI_API_KEY = "AIzaSyCMbqiz0Xu9mSNJfCr5NS7VI9H7FJG-PZI"
+GEMINI_API_KEY = "AIzaSyDilATyJ3FfyNzf9tO8X-mIEWb8Bcd0HuU"
 genai.configure(api_key=GEMINI_API_KEY)
 
 class ChatError: 
