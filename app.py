@@ -7,6 +7,9 @@ from google.api_core import retry
 import time
 from os import environ
 from dotenv import load_dotenv
+from logging.handlers import RotatingFileHandler
+import os
+from datetime import datetime
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -132,6 +135,44 @@ def get_gemini_response(user_message, max_retries=3):
             logger.error("Max retries reached", exc_info=True)
             raise
 
+# Update the logging configuration
+def setup_logger():
+    # Create logs directory if it doesn't exist
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+
+    # Configure logging format
+    formatter = logging.Formatter(
+        '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
+    )
+
+    # File handler for general logs
+    file_handler = RotatingFileHandler(
+        'logs/app.log', 
+        maxBytes=1024 * 1024,  # 1MB
+        backupCount=10
+    )
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.INFO)
+
+    # Error file handler
+    error_file_handler = RotatingFileHandler(
+        'logs/error.log',
+        maxBytes=1024 * 1024,
+        backupCount=10
+    )
+    error_file_handler.setFormatter(formatter)
+    error_file_handler.setLevel(logging.ERROR)
+
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(error_file_handler)
+
+    # Ensure Flask's logger also gets the handlers
+    app.logger.handlers = root_logger.handlers
+
 @app.route('/')
 def home():
  
@@ -141,31 +182,56 @@ def home():
 def message():
     try:
         user_message = request.form.get('message')
+        
+        # Log incoming request (sanitized)
+        app.logger.info(
+            f"Received message request. Length: {len(user_message) if user_message else 0}"
+        )
+
         if not user_message:
-            logger.warning("Empty message received")
-            return render_template('error_message.html', error = ChatError.VALIDATION_ERROR["message"], suggestion = ChatError.VALIDATION_ERROR["suggestion"])
-        try: 
+            app.logger.warning("Empty message received")
+            return render_template('error_message.html', 
+                                error=ChatError.VALIDATION_ERROR["message"],
+                                suggestion=ChatError.VALIDATION_ERROR["suggestion"])
+
+        try:
+            # Log AI request attempt
+            app.logger.info("Requesting AI response")
+            start_time = datetime.now()
+            
             ai_response = get_gemini_response(user_message)
-            return render_template('message.html', message=user_message, ai_response=ai_response)
+            
+            # Log successful response
+            duration = (datetime.now() - start_time).total_seconds()
+            app.logger.info(f"AI response received in {duration:.2f} seconds")
+            
+            return render_template('message.html', 
+                                message=user_message,
+                                ai_response=ai_response)
+
         except genai.types.generation_types.BlockedPromptException as e:
-            logger.error(f"Content filtered: {str(e)}")
-            return render_template('error_message.html', error = "I cannot respond to that type of message", suggestion = "Please ensure your message follows our content guidelines")
-        except Exception as api_error: 
+            app.logger.error(f"Content filtered: {str(e)}")
+            return render_template('error_message.html',
+                                error="I cannot respond to that type of message",
+                                suggestion="Please ensure your message follows our content guidelines")
+
+        except Exception as api_error:
             if "429" in str(api_error):
-                logger.warning(f"Rate limit hit: {str(api_error)}")
+                app.logger.warning(f"Rate limit hit: {str(api_error)}")
                 return render_template('error_message.html',
-                                     error=ChatError.RATE_LIMIT["message"],
-                                     suggestion=ChatError.RATE_LIMIT["suggestion"])
+                                    error=ChatError.RATE_LIMIT["message"],
+                                    suggestion=ChatError.RATE_LIMIT["suggestion"])
             else:
-                logger.error(f"API error: {str(api_error)}", exc_info=True)
+                app.logger.error(f"API error: {str(api_error)}", exc_info=True)
                 return render_template('error_message.html',
-                                     error=ChatError.API_ERROR["message"],
-                                     suggestion=ChatError.API_ERROR["suggestion"])
+                                    error=ChatError.API_ERROR["message"],
+                                    suggestion=ChatError.API_ERROR["suggestion"])
+
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+        app.logger.error(f"Unexpected error: {str(e)}", exc_info=True)
         return render_template('error_message.html',
-                             error=ChatError.GENERAL_ERROR["message"],
-                             suggestion=ChatError.GENERAL_ERROR["suggestion"])
+                            error=ChatError.GENERAL_ERROR["message"],
+                            suggestion=ChatError.GENERAL_ERROR["suggestion"])
 
 if __name__ == '__main__':
     print(get_gemini_response("Hello, how are you?"))
