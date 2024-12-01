@@ -5,8 +5,13 @@ import google.generativeai as genai
 from http import HTTPStatus
 from google.api_core import retry
 import time
+from os import environ
+from dotenv import load_dotenv
 
 app = Flask(__name__, static_url_path='/static')
+
+# Load environment variables
+load_dotenv()
 
 SUPPORT_KEYWORDS ={
   'technical': [
@@ -33,7 +38,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configure Gemini API
-GEMINI_API_KEY = "AIzaSyDilATyJ3FfyNzf9tO8X-mIEWb8Bcd0HuU"
+GEMINI_API_KEY = environ.get('GEMINI_API_KEY')
+if not GEMINI_API_KEY:
+    logger.error("GEMINI_API_KEY environment variable is not set")
+    raise ValueError("GEMINI_API_KEY environment variable is required")
+
 genai.configure(api_key=GEMINI_API_KEY)
 
 class ChatError: 
