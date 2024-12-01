@@ -2,9 +2,15 @@ services:
   - type: web
     name: chatbot
     runtime: python
+    plan: free  # You can change this to a paid plan if needed
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app --log-file=-
+    startCommand: gunicorn app:app --log-file=-
     envVars:
       - key: GEMINI_API_KEY
         sync: false
         value: ${GEMINI_API_KEY}
+    # Specify the Python version
+    # Health check to ensure the service is running
+    healthCheckPath: /
+    # Optional: Specify the region for deployment
+    region: oregon  # Change to your preferred region
