@@ -58,32 +58,32 @@ body,
 }
 
 .dark body {
-    background-color: #ffffff;
-    color: #111827;
+    background-color: #1f2937;
+    color: #f3f4f6;
 }
 
 .dark .message {
-    background-color: #f3f4f6;
-    color: #111827;
+    background-color: #374151;
+    color: #f3f4f6;
 }
 
 .dark .message.bg-blue-600 {
-    background-color: #2563eb;
+    background-color: #1d4ed8;
     color: #ffffff;
 }
 
 .dark .markdown-content {
-    color: #111827;
+    color: #f3f4f6;
 }
 
 .dark .markdown-content pre {
-    background-color: #f3f4f6;
-    border: 1px solid #e5e7eb;
+    background-color: #374151;
+    border: 1px solid #4b5563;
 }
 
 .dark .markdown-content code {
-    color: #111827;
-    background-color: #f3f4f6;
+    color: #f3f4f6;
+    background-color: #374151;
 }
 
 /* Light theme (default) styles remain unchanged */
@@ -115,4 +115,26 @@ body {
 /* Ensure smooth transitions */
 .transition-theme {
     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Theme-aware message styling */
+.message {
+    background-color: #f3f4f6;
+    color: #111827;
+}
+
+.message.bg-blue-600 {
+    background-color: #2563eb;
+    color: #ffffff;
+}
+
+.dark .message.bg-blue-600 {
+    background-color: #1d4ed8;
+    color: #ffffff;
+}
+
+/* Light theme message styles */
+.message {
+    background-color: #f3f4f6;
+    color: #111827;
 }

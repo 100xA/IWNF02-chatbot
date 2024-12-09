@@ -1,8 +1,8 @@
-<div class="message ml-auto bg-blue-600 text-white max-w-[80%] rounded-lg p-3 mb-3">
+<div class="message ml-auto bg-blue-600 text-white max-w-[80%] rounded-lg p-3 mb-3 transition-theme">
     <div class="font-semibold mb-1 text-sm opacity-75">You</div>
     <div>{{ message }}</div>
 </div>
-<div class="message bg-gray-700 text-gray-100 max-w-[80%] rounded-lg p-3 mb-3">
+<div class="message bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 max-w-[80%] rounded-lg p-3 mb-3 transition-theme">
     <div class="font-semibold mb-1 text-sm opacity-75">AI Support Assistant</div>
     <div class="markdown-content">
         {{ ai_response | safe }}
